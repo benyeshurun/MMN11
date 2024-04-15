@@ -1,0 +1,95 @@
+Ben Yeshurun MMN11 205502032
+
+The amount of state is= 9! = 362,880
+
+1:
+General Description
+This script is a Python program that solves a 3x3 sliding tile puzzle.
+The goal is to move the tiles around until they are in order from 1 to 8, with the empty space (0) at the beginning.
+The script uses different search strategies to find the solution.
+In IDDFS I used 50 as maximum depth but it could be changed easily.
+
+Functions
+    PuzzleState: A class that keeps track of the tiles' positions and the moves made.
+    bfs: A function that uses Breadth-First Search to find the shortest path to the solution.
+    dls: A function for searching within a limited depth, used by the IDDFS algorithm.
+    iddfs: A function that uses Iterative Deepening Depth-First Search to find the solution by gradually increasing the search depth.
+    gbfs: A function that uses Greedy Best-First Search, which tries to move closer to the goal with each step based on a heuristic.
+    a_star: A function that uses A* Search, which combines the cost of the path taken so far with a heuristic to find the most promising path.
+    reconstruct_path: A function that traces back the steps from the solution to the starting point to show the path taken.
+
+Main Data Structures
+    set: Used to remember which tile arrangements have already been seen to avoid repeating them.
+    deque: A queue that helps keep track of the next tile arrangements to explore in BFS.
+    heapq: A priority queue that helps GBFS and A* Search decide which tile arrangements to explore next based on their potential to lead to the solution.
+    itertools.count: A counter that helps the priority queue handle situations where two tile arrangements seem equally good.
+
+The script accepts the starting arrangement of the puzzle from the user and then tries to solve it using the different search methods, showing the steps to the solution for each method.
+
+2:
+Each state of the puzzle is represented by an instance of the PuzzleState class. This class captures the following information:
+    The current arrangement of the tiles on the board, stored as a list.
+    The position of the empty space (0) on the board.
+    The move that led to this state, which is the value of the tile that was moved into the empty space.
+    The parent state, which is the state from which this one was derived.
+    The cost to reach this state from the initial state (g-score), used in A* Search.
+
+3:Heuristic Explanation
+The heuristic aims to provide an estimate of how far the puzzle is from the solved state .
+Misplaced Tiles:
+The heuristic evaluates each tile to determine if it is in the correct row and the correct column.
+A tile is considered misplaced if it is not in its goal row, its goal column, or both.
+
+Cost Calculation:
+    If a tile is not in the correct row, the heuristic adds 1 to the cost.
+    If a tile is not in the correct column, the heuristic adds 1 to the cost.
+    If a tile is misplaced in both the row and the column, the heuristic adds 2 to the cost.
+
+Total Heuristic Value:
+The heuristic value for the entire puzzle state is the sum of the individual costs for all misplaced tiles.
+This sum represents the estimated number of moves required to get all tiles to their correct rows and columns.
+
+Admissible:: It does not to overestimate because to get each tile which is misplace we will have to do a minimum of 1 move but probably more and in our case its maximum 2 moves
+(Its a more simple and informative was than the Manhattan)
+
+Consistent: It is not consistent because one move can improve our situation as it can get
+in case they are in the same column and the same row: 0<= cost(s,a,s’)+h1(s’), & cost(s,a,s’)+h1(s’) >= 0+h1(s’)
+in case they are in the same column and not same row: 1<= cost(s,a,s’)+h1(s’), & cost(s,a,s’)+h1(s’) >= 1+h1(s’)
+in case they are not in the same column and in same row: 1<= cost(s,a,s’)+h1(s’), & cost(s,a,s’)+h1(s’) >= 1+h1(s’)
+in case they are in not in the same row and column: it will force at least two moves 2<= cost(s,a,s’)+h1(s’), & cost(s,a,s’)+h1(s’) >= 2+h1(s’)
+
+
+4:
+BFS & IDDFS are guaranteed find the optimal solution.
+GBFS is not guaranteed to find the optimal solution. It selects the next state to explore based on a heuristic that estimates how close a state is to the goal.
+A* Search is guaranteed to find the optimal solution if the heuristic used is admissible
+
+5:
+Initialization: When you run my program, it first reads the initial state of the puzzle from the command line arguments. This initial state is a sequence of numbers representing the positions of the tiles on the 3x3 board, with '0' representing the empty space.
+State Representation: The program uses the PuzzleState class to represent each state of the puzzle. A state includes the current configuration of the tiles, the position of the empty space, the move that led to this state, and the state's parent (the state from which it was derived).
+Search Algorithms: Implements 4 search algorithms:
+    Breadth-First Search (BFS): Explores the puzzle's state space level by level until it finds the goal state or exhausts all possibilities.
+    Iterative Deepening Depth-First Search (IDDFS): Repeatedly performs depth-limited searches with increasing depth limits until it finds the goal state.
+    Greedy Best-First Search (GBFS): Uses a heuristic to prioritize states that appear to be closest to the goal, but it does not guarantee the shortest path.
+    A Search*: Combines the actual cost to reach a state with a heuristic estimate to find the most promising path to the goal, guaranteeing the shortest path if the heuristic is admissible.
+Path Reconstruction: Once a search algorithm finds the goal state, the program uses the reconstruct_path function to trace back the moves from the goal state to the initial state. This function follows the parent pointers stored in each state to build the sequence of moves that led to the solution.
+Output: The program outputs the solution path for each search algorithm, showing the sequence of tile moves required to solve the puzzle. It also outputs the number of moves for each algorithm, allowing you to compare their performance.
+Termination: After executing all the search algorithms and displaying their results, the program terminates.
+
+Running the example output: (.venv) PS C:\Users\BenYeshurun\PycharmProjects\MMN11> python Tiles.py 1 4 0 5 8 2 3 6 7
+
+BFS
+10
+[2, 8, 5, 3, 6, 7, 8, 5, 4, 1]
+
+IDDFS
+10
+[2, 8, 5, 3, 6, 7, 8, 5, 4, 1]
+
+GBFS
+116
+[2, 7, 6, 8, 4, 2, 7, 6, 8, 4, 5, 3, 4, 5, 3, 4, 5, 8, 6, 3, 2, 7, 3, 6, 8, 5, 4, 1, 7, 2, 1, 7, 2, 1, 5, 4, 7, 5, 4, 8, 6, 4, 5, 2, 1, 5, 2, 7, 8, 2, 4, 6, 2, 8, 7, 4, 5, 3, 6, 2, 8, 5, 2, 6, 3, 2, 5, 7, 4, 5, 7, 8, 6, 7, 5, 4, 8, 5, 7, 6, 5, 8, 4, 7, 6, 5, 8, 4, 7, 6, 4, 8, 5, 4, 6, 1, 2, 3, 4, 6, 3, 2, 1, 3, 6, 4, 2, 1, 3, 6, 4, 5, 8, 7, 6, 3]
+
+A*
+10
+[2, 8, 5, 3, 6, 7, 8, 5, 4, 1]
